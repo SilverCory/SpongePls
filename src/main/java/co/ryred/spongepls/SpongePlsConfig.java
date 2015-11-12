@@ -102,7 +102,7 @@ public class SpongePlsConfig
 
 	private File getFile()
 	{
-		return new File( plugin.getFile(), "config.yml");
+		return new File( plugin.getDataFolder(), "config.yml");
 	}
 
 	private InputStream getResourceAsStream()
