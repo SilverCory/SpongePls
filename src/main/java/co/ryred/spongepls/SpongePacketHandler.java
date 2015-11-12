@@ -78,6 +78,7 @@ public class SpongePacketHandler extends PacketHandler
 
 				if( !user.getExtraDataInHandshake().isEmpty() ) {
 					handshake.setHost( handshake.getHost() + "\00|" + user.getExtraDataInHandshake() );
+					sentPacket.setPacket( handshake );
 				}
 
 			}
