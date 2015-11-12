@@ -59,8 +59,8 @@ public class SpongePlsConfig
 
 		this.plugin = plugin;
 
-		if ( !getFile().exists() ) {
-			getFile().mkdir();
+		if ( !getFile().getParent().exists() ) {
+			getFile().getParent().mkdirs();
 		}
 		if ( !getFile().exists() ) {
 			try {
