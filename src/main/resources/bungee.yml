@@ -1,0 +1,24 @@
+#############################################
+# I like to leave lots of comments in these #
+# yaml files because nobody does but it's a #
+# nice feature. :)                          #
+#############################################
+
+# This will be BEss because BEss-Bukkit is for Maven..
+name: 'SpongePls'
+
+# The main class, if I obf this remember to have this change.
+main: 'co.ryred.spongepls.SpongePlsPlugin'
+
+# MEEEEEE. :D Would be nice if there was a contributers section..
+author: 'Cory Redmond'
+
+# Description for this plugin.
+description: 'SpongePls allows IPForwarding to sponge servers.'
+
+# VERSIONNNNNNN
+version: '${pom.version}-b#${env.BUILD_NUMBER}'
+
+# We need this lib.
+depend:
+  - 'BungeePacketListenerApi'

@@ -1,0 +1,8 @@
+#####################################
+# SpongePls coniguration. YAML ONLY #
+#####################################
+
+allowed-servers:
+  - 'ServerNameHere'
+  - '(.*nomatch.*)'
+  - 'CaseInsensaTiVe'
