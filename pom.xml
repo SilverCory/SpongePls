@@ -16,6 +16,9 @@
 
         <!-- Always use clean install.. It's better. ;) -->
         <defaultGoal>clean install</defaultGoal>
+        
+        <!-- Final name needs to get rid of that silly version. -->
+        <finalName>SpongePls</finalName>
 
         <!-- Inject the maven environment variables into these files. -->
         <resources>
