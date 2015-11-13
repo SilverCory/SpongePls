@@ -47,6 +47,8 @@ import net.md_5.bungee.config.Configuration;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -59,10 +61,28 @@ public class SpongePlsPlugin extends Plugin
 	@Getter
 	@Setter(AccessLevel.PRIVATE)
 	public static SpongePlsPlugin __INSTANCE__ = null;
-
+	@Setter(AccessLevel.PACKAGE)
+	private static List<String> patterns = new ArrayList<>();
 	@Getter( AccessLevel.PACKAGE )
 	private SpongePlsConfig configuration;
 	private Class bossHandlerClass;
+
+	/**
+	 * http://blog.janjonas.net/2012-03-06/java-test-string-match-wildcard-expression
+	 *
+	 * @param text Text to test
+	 * @return True if the text matches the wildcard pattern
+	 */
+	public static boolean isAllowed( String text )
+	{
+
+		for ( String pattern : patterns ) {
+			if ( Pattern.compile( pattern, Pattern.CASE_INSENSITIVE ).matcher( text ).find() ) return true;
+		}
+
+		return false;
+
+	}
 
 	@Override
 	public void onLoad()
@@ -143,23 +163,6 @@ public class SpongePlsPlugin extends Plugin
 	public void saveConfig() {
 		if( getConfiguration() == null ) return;
 		getConfiguration().saveConfig();
-	}
-
-	/**
-	 * http://blog.janjonas.net/2012-03-06/java-test-string-match-wildcard-expression
-	 *
-	 * @param text Text to test
-	 * @return True if the text matches the wildcard pattern
-	 */
-	public boolean isAllowed( String text )
-	{
-
-		for ( String pattern : getConfig().getStringList( "allowed-servers" ) ) {
-			if ( Pattern.compile( pattern, Pattern.CASE_INSENSITIVE ).matcher( text ).find() ) return true;
-		}
-
-		return false;
-
 	}
 
 }

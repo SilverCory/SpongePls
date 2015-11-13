@@ -43,6 +43,8 @@ import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Cory Redmond
@@ -98,6 +100,11 @@ public class SpongePlsConfig
 	public void reload() throws IOException
 	{
 		this.config = ConfigurationProvider.getProvider( YamlConfiguration.class ).load( getFile() );
+
+		List<String> list = new ArrayList<String>();
+		list.addAll( this.config.getStringList( "allowed-servers" ) );
+		SpongePlsPlugin.setPatterns( list );
+
 	}
 
 	private File getFile()
