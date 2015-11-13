@@ -132,6 +132,8 @@ public class SpongePlsPlugin extends Plugin
 										+ "this.handler = handler;"
 										+ "}"
 										+ "};" );
+										
+		cc.writeFile();
 
 		CustomClassLoader cl = new CustomClassLoader( BungeeCord.class.getClassLoader(), cc.toBytecode() );
 		this.bossHandlerClass = cl.loadClass( "net.md_5.bungee.netty.HandlerBoss" );
