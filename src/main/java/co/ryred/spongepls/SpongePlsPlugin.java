@@ -36,11 +36,18 @@
 
 package co.ryred.spongepls;
 
-import de.inventivegames.packetlistener.handler.PacketHandler;
+import co.ryred.spongepls.netty.BetterBossHandler;
+import javassist.*;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
+import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
+
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.regex.Pattern;
 
 /**
  * @author Cory Redmond
@@ -49,12 +56,18 @@ import net.md_5.bungee.config.Configuration;
 public class SpongePlsPlugin extends Plugin
 {
 
+	@Getter
+	@Setter(AccessLevel.PRIVATE)
+	public static SpongePlsPlugin __INSTANCE__ = null;
+
 	@Getter( AccessLevel.PACKAGE )
 	private SpongePlsConfig configuration;
+	private Class bossHandlerClass;
 
 	@Override
 	public void onLoad()
 	{
+		set__INSTANCE__( this );
 		this.configuration = new SpongePlsConfig( this );
 	}
 
@@ -64,7 +77,62 @@ public class SpongePlsPlugin extends Plugin
 
 		getProxy().getPluginManager().registerCommand( this, new SpongePlsCommand( this ) );
 
-		PacketHandler.addHandler( new SpongePacketHandler( this ) );
+		try {
+			changeChild();
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}
+
+	}
+
+	private void changeChild() throws NoSuchFieldException, IllegalAccessException, NotFoundException, CannotCompileException, InstantiationException, IOException, ClassNotFoundException
+	{
+
+		//co.ryred.spongepls.SpongePlsPlugin.initChannel( ch );
+
+		ClassPool pool = ClassPool.getDefault();
+		pool.insertClassPath( new ClassClassPath( BetterBossHandler.class ) );
+		CtClass cc = pool.get( "net.md_5.bungee.netty.HandlerBoss" );
+
+		CtField field = new CtField( pool.get( "java.lang.Object" ), "invokableObj", cc );
+		field.setModifiers( Modifier.setPublic( Modifier.STATIC ) );
+		cc.addField( field );
+
+		CtMethod initMethod = cc.getDeclaredMethod( "setHandler", new CtClass[]{ pool.get( "net.md_5.bungee.netty.PacketHandler" ) } );
+		initMethod.insertAfter( "{"
+										+ "try {"
+										+ "if (invokableObj != null) {"
+										+ "java.lang.reflect.Method m = invokableObj.getClass().getDeclaredMethod(\"invokePls\", new java.lang.Class[] {net.md_5.bungee.netty.PacketHandler.class});"
+										+ "if (m != null) {"
+										+ "this.handler = (net.md_5.bungee.netty.PacketHandler) m.invoke(null, new Object[] { handler });"
+										+ "}"
+										+ "}"
+										+ "} catch (Exception ex) {"
+										+ "ex.printStackTrace();"
+										+ "this.handler = handler;"
+										+ "}"
+										+ "};" );
+
+		CustomClassLoader cl = new CustomClassLoader( BungeeCord.class.getClassLoader(), cc.toBytecode() );
+		this.bossHandlerClass = cl.loadClass( "net.md_5.bungee.netty.HandlerBoss" );
+
+		Field invokable = bossHandlerClass.getDeclaredField( "invokableObj" );
+		invokable.setAccessible( true );
+		invokable.set( null, new BetterBossHandler() );
+
+	}
+
+	@Override
+	public void onDisable()
+	{
+		set__INSTANCE__( null );
+
+		try {
+			Field invokable = bossHandlerClass.getDeclaredField( "invokableObj" );
+			invokable.setAccessible( true );
+			invokable.set( null, null );
+		} catch ( Exception ex ) {}
+
 	}
 
 	public Configuration getConfig() {
@@ -75,6 +143,23 @@ public class SpongePlsPlugin extends Plugin
 	public void saveConfig() {
 		if( getConfiguration() == null ) return;
 		getConfiguration().saveConfig();
+	}
+
+	/**
+	 * http://blog.janjonas.net/2012-03-06/java-test-string-match-wildcard-expression
+	 *
+	 * @param text Text to test
+	 * @return True if the text matches the wildcard pattern
+	 */
+	public boolean isAllowed( String text )
+	{
+
+		for ( String pattern : getConfig().getStringList( "allowed-servers" ) ) {
+			if ( Pattern.compile( pattern, Pattern.CASE_INSENSITIVE ).matcher( text ).find() ) return true;
+		}
+
+		return false;
+
 	}
 
 }
