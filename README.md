@@ -26,3 +26,7 @@ The reload command is a little wobbly. So let's just not use that. ;)
 ## **Configuration**
 
 The configuration supports regex as well as normal server names. If the server name doesn't match the server being joined then the extra data won't be sent. You don't want to send this data if the server is vanilla or SpigotMC.
+
+## **Be kind**
+
+I'm not releasing this on SpigotMC, because anyone with sense and a little knowledge of how BungeeCord's IP forwarding works, could easily copy my code and recreate one of my most downloaded plugins. The mentioned plugin took the most effort out of all of them. I will be using this method in that plugin to edit the data. I'd appreciate it greatly if you kept it for personal use if you do. If you really want one of the plugins and can't afford even half the price, I'll happily give it to you.
