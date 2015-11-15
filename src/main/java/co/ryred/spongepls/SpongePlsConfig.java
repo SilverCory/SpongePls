@@ -74,6 +74,10 @@ public class SpongePlsConfig
 				throw new RuntimeException( "Unable to create config file", e );
 			}
 		}
+		
+		List<String> list = new ArrayList<String>();
+		list.addAll( getConfig().getStringList( "allowed-servers" ) );
+		SpongePlsPlugin.setPatterns( list );
 
 	}
 
