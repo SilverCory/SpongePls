@@ -3,7 +3,7 @@
 #####################################
 
 allowed-servers:
-  - '*.'
+  - '.*'
   - 'ServerNameHere'
   - '(.*nomatch.*)'
   - 'CaseInsensaTiVe'
