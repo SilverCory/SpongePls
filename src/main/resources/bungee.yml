@@ -4,7 +4,7 @@
 # nice feature. :)                          #
 #############################################
 
-# This will be BEss because BEss-Bukkit is for Maven..
+# erm. SPONGE EEEMEMEME, Really it should be called BungeeCordPls.
 name: 'SpongePls'
 
 # The main class, if I obf this remember to have this change.
@@ -18,7 +18,3 @@ description: 'SpongePls allows IPForwarding to sponge servers.'
 
 # VERSIONNNNNNN
 version: '${pom.version}-b#${env.BUILD_NUMBER}'
-
-# We need this lib.
-depend:
-  - 'BungeePacketListenerApi'
