@@ -36,6 +36,8 @@
 
 package co.ryred.spongepls;
 
+import co.ryred.spongepls.netty.BetterBossHandler;
+import javassist.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -43,6 +45,7 @@ import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +65,7 @@ public class SpongePlsPlugin extends Plugin
 	private static List<String> patterns = new ArrayList<>();
 	@Getter( AccessLevel.PACKAGE )
 	private SpongePlsConfig configuration;
-	private boolean changedIpforwarding;
+	private Class bossHandlerClass;
 
 	/**
 	 * http://blog.janjonas.net/2012-03-06/java-test-string-match-wildcard-expression
@@ -92,20 +95,53 @@ public class SpongePlsPlugin extends Plugin
 	public void onEnable()
 	{
 
-		if( BungeeCord.getInstance().getConfig().isIpForward() ) {
-			try {
-				Field field = BungeeCord.getInstance().getConfig().getClass().getDeclaredField( "ipForward" );
-				field.setAccessible( true );
-				field.set( BungeeCord.getInstance().getConfig(), false );
-				changedIpforwarding = true;
-			} catch (NoSuchFieldException | IllegalAccessException e) {
-				e.printStackTrace();
-			}
+		getProxy().getPluginManager().registerCommand( this, new SpongePlsCommand( this ) );
+
+		try {
+			changeChild();
+		} catch ( Exception e ) {
+			e.printStackTrace();
 		}
 
+	}
 
-		getProxy().getPluginManager().registerCommand( this, new SpongePlsCommand( this ) );
-		getProxy().getPluginManager().registerListener( this, new PlayerListener( this ) );
+	private void changeChild() throws NoSuchFieldException, IllegalAccessException, NotFoundException, CannotCompileException, InstantiationException, IOException, ClassNotFoundException
+	{
+
+		//co.ryred.spongepls.SpongePlsPlugin.initChannel( ch );
+
+		ClassPool pool = ClassPool.getDefault();
+		pool.insertClassPath( new ClassClassPath( BetterBossHandler.class ) );
+		CtClass cc = pool.get( "net.md_5.bungee.netty.HandlerBoss" );
+
+		CtField field = new CtField( pool.get( "java.lang.Object" ), "invokableObj", cc );
+		field.setModifiers( Modifier.setPublic( Modifier.STATIC ) );
+		cc.addField( field );
+
+		CtMethod initMethod = cc.getDeclaredMethod( "setHandler", new CtClass[]{ pool.get( "net.md_5.bungee.netty.PacketHandler" ) } );
+		initMethod.insertAfter( "{"
+										+ "try {"
+										+ "if (invokableObj != null) {"
+										+ "java.lang.reflect.Method m = invokableObj.getClass().getDeclaredMethod(\"invokePls\", new java.lang.Class[] {net.md_5.bungee.netty.PacketHandler.class});"
+										+ "if (m != null) {"
+										+ "this.handler = (net.md_5.bungee.netty.PacketHandler) m.invoke(null, new Object[] { handler });"
+										+ "}"
+										+ "}"
+										+ "} catch (Exception ex) {"
+										+ "ex.printStackTrace();"
+										+ "this.handler = handler;"
+										+ "}"
+										+ "};" );
+										
+		cc.writeFile();
+
+		CustomClassLoader cl = new CustomClassLoader( BungeeCord.class.getClassLoader(), cc.toBytecode() );
+		this.bossHandlerClass = cl.loadClass( "net.md_5.bungee.netty.HandlerBoss" );
+
+		Field invokable = bossHandlerClass.getDeclaredField( "invokableObj" );
+		invokable.setAccessible( true );
+		invokable.set( null, new BetterBossHandler() );
+
 	}
 
 	@Override
@@ -113,15 +149,11 @@ public class SpongePlsPlugin extends Plugin
 	{
 		set__INSTANCE__( null );
 
-		if( changedIpforwarding ) {
-			try {
-				Field field = BungeeCord.getInstance().getConfig().getClass().getDeclaredField( "ipForward" );
-				field.setAccessible( true );
-				field.set( BungeeCord.getInstance().getConfig(), true );
-			} catch (NoSuchFieldException | IllegalAccessException e) {
-				e.printStackTrace();
-			}
-		}
+		try {
+			Field invokable = bossHandlerClass.getDeclaredField( "invokableObj" );
+			invokable.setAccessible( true );
+			invokable.set( null, null );
+		} catch ( Exception ex ) {}
 
 	}
 
