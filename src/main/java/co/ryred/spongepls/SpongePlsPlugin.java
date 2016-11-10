@@ -50,6 +50,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author Cory Redmond
@@ -61,8 +62,7 @@ public class SpongePlsPlugin extends Plugin
 	@Getter
 	@Setter(AccessLevel.PRIVATE)
 	public static SpongePlsPlugin __INSTANCE__ = null;
-	@Setter(AccessLevel.PACKAGE)
-	private static List<String> patterns = new ArrayList<>();
+	private static List<Pattern> patterns = new ArrayList<>();
 	@Getter( AccessLevel.PACKAGE )
 	private SpongePlsConfig configuration;
 	private Class bossHandlerClass;
@@ -76,11 +76,19 @@ public class SpongePlsPlugin extends Plugin
 	public static boolean isAllowed( String text )
 	{
 
-		for ( String pattern : patterns ) {
-			if ( Pattern.compile( pattern, Pattern.CASE_INSENSITIVE ).matcher( text ).find() ) return true;
+		for( Pattern pattern : patterns ) {
+			if( pattern.matcher( text ).find() ) return true;
 		}
 
 		return false;
+
+	}
+
+	static void setPatterns( List<String> patterns ) {
+
+		SpongePlsPlugin.patterns = patterns.stream()
+				.map( pattern -> Pattern.compile( pattern.toLowerCase(), Pattern.CASE_INSENSITIVE ) )
+				.collect( Collectors.toList());
 
 	}
 
