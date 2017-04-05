@@ -5,7 +5,7 @@
 [![Build Status](http://ci.ac3-servers.eu/job/SpongePls/badge/icon)](http://ci.ac3-servers.eu/job/SpongePls/)
 
 Download the jar file from [my build server](http://ci.ac3-servers.eu/job/SpongePls/lastSuccessfulBuild/artifact/target/SpongePls.jar).
-It requires Java 7 to run.
+It requires Java 8 to run.
 
 To contribute, it's in Java, it's got a formatting you can cope with, and it's on github, you should know what to do. I'm not too fussy.
 
@@ -22,6 +22,16 @@ I aimed to make this reasonably easy to use. And it's more than easy for someone
 3.  Edit the Configuration to your preferences.
 
 The reload command is a little wobbly. So let's just not use that. ;)
+
+**NOTE: Make sure the following configuration options are set**
+
+* In the Sponge `global.conf`
+  * `sponge.bungeecord.ipforwarding` is **true**
+  * `sponge.modules.bungeecord` is **true**
+* In `server.properties`
+  * `online-mode` is **false**
+* In the BungeeCord `config.yml`
+  * `ip-forwarding` is **true**
 
 ## **Configuration**
 
